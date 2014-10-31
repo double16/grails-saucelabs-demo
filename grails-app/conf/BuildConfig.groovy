@@ -32,6 +32,9 @@ grails.project.dependency.resolution = {
     checksums true // Whether to verify checksums on resolve
     legacyResolve false // whether to do a secondary resolve on plugin installation, not advised and here for backwards compatibility
 
+	def gebVersion = "0.9.3"
+	def seleniumVersion = "2.42.2"
+	
     repositories {
         inherits true // Whether to inherit repository definitions from plugins
 
@@ -44,6 +47,8 @@ grails.project.dependency.resolution = {
         //mavenRepo "http://repository.codehaus.org"
         //mavenRepo "http://download.java.net/maven/2/"
         //mavenRepo "http://repository.jboss.com/maven2/"
+		
+		mavenRepo "http://repository-saucelabs.forge.cloudbees.com/release"
     }
 
     dependencies {
@@ -51,6 +56,18 @@ grails.project.dependency.resolution = {
         // runtime 'mysql:mysql-connector-java:5.1.29'
         // runtime 'org.postgresql:postgresql:9.3-1101-jdbc41'
         test "org.grails:grails-datastore-test-support:1.0-grails-2.4"
+		test "org.gebish:geb-spock:$gebVersion"
+		test "org.seleniumhq.selenium:selenium-support:$seleniumVersion"
+		test "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
+		test "org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion"
+		test "org.seleniumhq.selenium:selenium-ie-driver:$seleniumVersion"
+		if (System.getProperty('geb.env')?.startsWith('ie')) {
+			println 'WARN: Unit tests will fail due to differing versions of jetty in sauce-connect'
+			test "com.saucelabs:sauce-connect:3.1.32"
+		}
+		test( "com.github.detro.ghostdriver:phantomjsdriver:1.1.0" ) {
+		  transitive = false
+		}
     }
 
     plugins {
@@ -72,5 +89,13 @@ grails.project.dependency.resolution = {
         //compile ":less-asset-pipeline:1.10.0"
         //compile ":coffee-asset-pipeline:1.8.0"
         //compile ":handlebars-asset-pipeline:1.3.0.3"
+		
+		test ":geb:$gebVersion"
+		test ":code-coverage:2.0.3-2"
     }
+	
+	coverage {
+		enabledByDefault = false
+		xml = true
+	 }
 }
