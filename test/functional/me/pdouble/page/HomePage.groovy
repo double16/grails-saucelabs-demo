@@ -1,5 +1,8 @@
 package me.pdouble.page
 
-class HomePage {
+import geb.Page
 
+class HomePage extends Page {
+	static url = ''
+	static at = { title == 'Welcome to Grails' }
 }
