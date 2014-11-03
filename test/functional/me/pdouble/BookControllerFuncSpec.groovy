@@ -24,9 +24,9 @@ class BookControllerFuncSpec extends GebReportingSpec {
 		at CreateBookPage
 		
 		when:'form is submitted'
-		bookTitle << 'New Book'
-		author << 'John Doe'
-		pages << '25'
+		bookTitle = 'New Book'
+		author = 'John Doe'
+		pages = '25'
 		submit.click()
 		then:'book details are displayed'
 		at BookDetails

@@ -52,22 +52,22 @@ grails.project.dependency.resolution = {
     }
 
     dependencies {
-        // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
-        // runtime 'mysql:mysql-connector-java:5.1.29'
-        // runtime 'org.postgresql:postgresql:9.3-1101-jdbc41'
-        test "org.grails:grails-datastore-test-support:1.0-grails-2.4"
-		test "org.gebish:geb-spock:$gebVersion"
-		test "org.seleniumhq.selenium:selenium-support:$seleniumVersion"
-		test "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
-		test "org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion"
-		test "org.seleniumhq.selenium:selenium-ie-driver:$seleniumVersion"
-		if (System.getProperty('geb.env')?.startsWith('ie')) {
-			println 'WARN: Unit tests will fail due to differing versions of jetty in sauce-connect'
-			test "com.saucelabs:sauce-connect:3.1.32"
-		}
-		test( "com.github.detro.ghostdriver:phantomjsdriver:1.1.0" ) {
-		  transitive = false
-		}
+      // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
+      // runtime 'mysql:mysql-connector-java:5.1.29'
+      // runtime 'org.postgresql:postgresql:9.3-1101-jdbc41'
+      test "org.grails:grails-datastore-test-support:1.0-grails-2.4"
+      test "org.gebish:geb-spock:$gebVersion"
+      test "org.seleniumhq.selenium:selenium-support:$seleniumVersion"
+      test "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
+      test "org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion"
+      test "org.seleniumhq.selenium:selenium-ie-driver:$seleniumVersion"
+      test( "com.github.detro.ghostdriver:phantomjsdriver:1.1.0" ) {
+        transitive = false
+      }
+      provided("com.saucelabs:sauce-connect:3.1.32") {
+        excludes "jetty"
+      }
+      provided "com.saucelabs:ci-sauce:1.74"
     }
 
     plugins {

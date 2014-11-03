@@ -18,4 +18,5 @@ stacktrace.log
 .classpath
 .project
 .idea
-
+node_modules
+setenv.sh

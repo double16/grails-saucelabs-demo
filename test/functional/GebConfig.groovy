@@ -8,15 +8,6 @@ import geb.driver.SauceLabsDriverFactory
 import java.io.File
 import org.apache.commons.lang.SystemUtils
 
-/*
-  Tips for cross-browser test:
-  1. Start the test on a different page than tests end. The browser may not reload the page is the URL is the same.
-  2. Firefox is picky about selectors for non-strict HTML pages. For example, spring-security-core uses single quote deliminators.
-  3. Add 'ng-cloak' class to AngularJS elements to hide before AngularJS inits.
-  4. AngularJS actions may need a 'ready' class on the element to know when the controller is ready. Or the identifying class can be set using an ng-class attribute so it's not available until the controlller is ready.
-  5. 'at' checkers should look for content on the page, not only the title. The title is commonly available before the page content, such as in firefox.
-*/
-
 waiting {
   timeout = 10
   retryInterval = 0.5
@@ -32,6 +23,7 @@ waiting {
 }
 
 atCheckWaiting = true
+baseNavigatorWaiting = true
 
 def downloadDriver = { File file, String path ->
     if (!file.exists()) {
