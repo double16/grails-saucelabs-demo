@@ -68,11 +68,6 @@ grails.project.dependency.resolution = {
       test( "com.github.detro.ghostdriver:phantomjsdriver:1.1.0" ) {
         transitive = false
       }
-      test "com.saucelabs:sauce_junit:2.1.4"
-      provided("com.saucelabs:sauce-connect:3.1.32") {
-        excludes "jetty"
-      }
-      provided "com.saucelabs:ci-sauce:1.74"
     }
 
     plugins {
@@ -97,10 +92,12 @@ grails.project.dependency.resolution = {
 		
         test ":geb:$gebVersion"
         test ":code-coverage:2.0.3-2"
+        test ":geb-saucelabs:0.1"
     }
 
-	coverage {
-		enabledByDefault = false
-		xml = true
-	 }
+}
+
+coverage {
+  enabledByDefault = false
+  xml = true
 }
