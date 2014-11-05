@@ -79,6 +79,7 @@ environments {
   }
   // grails -Dgeb.env=firefox test-app functional:
   'firefox' { sauceDriver('firefox:Windows 7:31') }
+  'firefox-yosemite' { sauceDriver('firefox:OS X 10.10:33') }
   // grails -Dgeb.env=chrome test-app functional:
   'chrome' { sauceDriver('chrome:Windows 7:36') }
   // grails -Dgeb.env=safari test-app functional:
@@ -89,4 +90,5 @@ environments {
   'ie10' { sauceDriver('internetExplorer:Windows 7:10') }
   // grails -Dgeb.env=ie11 test-app functional:
   'ie11' { sauceDriver('internetExplorer:Windows 7:11') }
+  'ios' { sauceDriver('iphone:OS X 10.9:7.1') }
 }
