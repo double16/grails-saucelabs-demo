@@ -47,7 +47,10 @@ def sauceDriver = { String sauceBrowser ->
     def accessKey = System.getenv("SAUCE_LABS_ACCESS_PASSWORD")
     assert accessKey
     driver = {
-       new SauceLabsDriverFactory().create(sauceBrowser, username, accessKey)
+       new SauceLabsDriverFactory().create(sauceBrowser, username, accessKey, [
+        'name'  : 'grails-saucelabs-demo',
+        'build' : "git rev-parse HEAD".execute().text
+       ])
     }    
 }
 

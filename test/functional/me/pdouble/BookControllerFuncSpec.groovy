@@ -1,9 +1,9 @@
 package me.pdouble
 
-import me.pdouble.page.BookDetails;
-import me.pdouble.page.BookListPage;
-import me.pdouble.page.CreateBookPage;
 import geb.spock.GebReportingSpec
+import me.pdouble.page.BookDetails
+import me.pdouble.page.BookListPage
+import me.pdouble.page.CreateBookPage
 
 class BookControllerFuncSpec extends GebReportingSpec {
 

@@ -7,19 +7,23 @@ grails.project.target.level = 1.7
 grails.project.source.level = 1.7
 //grails.project.war.file = "target/${appName}-${appVersion}.war"
 
-grails.project.fork = [
-    // configure settings for compilation JVM, note that if you alter the Groovy version forked compilation is required
-    //  compile: [maxMemory: 256, minMemory: 64, debug: false, maxPerm: 256, daemon:true],
+if (Boolean.getBoolean('grails.nofork')) {
+  grails.project.fork = [ compile: false, test: false, run: false, war: false, console: false ]
+} else {
+  grails.project.fork = [
+      // configure settings for compilation JVM, note that if you alter the Groovy version forked compilation is required
+      //  compile: [maxMemory: 256, minMemory: 64, debug: false, maxPerm: 256, daemon:true],
 
-    // configure settings for the test-app JVM, uses the daemon by default
-    test: [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256, daemon:true],
-    // configure settings for the run-app JVM
-    run: [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256, forkReserve:false],
-    // configure settings for the run-war JVM
-    war: [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256, forkReserve:false],
-    // configure settings for the Console UI JVM
-    console: [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256]
-]
+      // configure settings for the test-app JVM, uses the daemon by default
+      test   : [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256, daemon: true],
+      // configure settings for the run-app JVM
+      run    : [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256, forkReserve: false],
+      // configure settings for the run-war JVM
+      war    : [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256, forkReserve: false],
+      // configure settings for the Console UI JVM
+      console: [maxMemory: 768, minMemory: 64, debug: false, maxPerm: 256]
+  ]
+}
 
 grails.project.dependency.resolver = "maven" // or ivy
 grails.project.dependency.resolution = {
@@ -64,6 +68,7 @@ grails.project.dependency.resolution = {
       test( "com.github.detro.ghostdriver:phantomjsdriver:1.1.0" ) {
         transitive = false
       }
+      test "com.saucelabs:sauce_junit:2.1.4"
       provided("com.saucelabs:sauce-connect:3.1.32") {
         excludes "jetty"
       }
@@ -90,10 +95,10 @@ grails.project.dependency.resolution = {
         //compile ":coffee-asset-pipeline:1.8.0"
         //compile ":handlebars-asset-pipeline:1.3.0.3"
 		
-		test ":geb:$gebVersion"
-		test ":code-coverage:2.0.3-2"
+        test ":geb:$gebVersion"
+        test ":code-coverage:2.0.3-2"
     }
-	
+
 	coverage {
 		enabledByDefault = false
 		xml = true
