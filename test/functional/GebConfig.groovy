@@ -89,6 +89,6 @@ environments {
   // grails -Dgeb.env=ie10 test-app functional:
   'ie10' { sauceDriver('internetExplorer:Windows 7:10') }
   // grails -Dgeb.env=ie11 test-app functional:
-  'ie11' { sauceDriver('internetExplorer:Windows 7:11') }
+  'ie11' { sauceDriver('internetExplorer:Windows 8.1:11') }
   'ios' { sauceDriver('iphone:OS X 10.9:7.1') }
 }
