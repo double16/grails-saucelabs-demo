@@ -41,16 +41,17 @@ driver = {
     d
 }
 
-def sauceDriver = { String sauceBrowser ->
+def sauceDriver = { def browserCaps ->
     def username = System.getenv("SAUCE_LABS_USER")
     assert username
     def accessKey = System.getenv("SAUCE_LABS_ACCESS_PASSWORD")
     assert accessKey
+    def caps = [:]
+    caps << browserCaps
+    caps.put('build', "git rev-parse HEAD".execute().text)
     driver = {
-       new SauceLabsDriverFactory().create(sauceBrowser, username, accessKey, [
-        'build' : "git rev-parse HEAD".execute().text
-       ])
-    }    
+       new SauceLabsDriverFactory().create(username, accessKey, caps)
+    }
 }
 
 environments {
@@ -76,18 +77,26 @@ environments {
     
       driver = { new ChromeDriver() }
   }
+
   // grails -Dgeb.env=firefox test-app functional:
-  'firefox' { sauceDriver('firefox:Windows 7:31') }
-  'firefox-yosemite' { sauceDriver('firefox:OS X 10.10:33') }
+  'firefox' { sauceDriver(browserName: 'firefox', platform:'Windows 7', version:'31') }
+
+  'firefox-yosemite' { sauceDriver(browserName: 'firefox', platform:'OS X 10.10', version:'33') }
+
   // grails -Dgeb.env=chrome test-app functional:
-  'chrome' { sauceDriver('chrome:Windows 7:36') }
+  'chrome' { sauceDriver(browserName: 'chrome', platform:'Windows 7', version:'36') }
+
   // grails -Dgeb.env=safari test-app functional:
-  'safari' { sauceDriver('safari:OS X 10.9:7') }
+  'safari' { sauceDriver(browserName: 'safari', platform:'OS X 10.9', version:'7') }
+
   // grails -Dgeb.env=ie9 test-app functional:
-  'ie9' { sauceDriver('internetExplorer:Windows 7:9') }
+  'ie9' { sauceDriver(browserName: 'internet explorer', platform:'Windows 7', version:'9') }
+
   // grails -Dgeb.env=ie10 test-app functional:
-  'ie10' { sauceDriver('internetExplorer:Windows 7:10') }
+  'ie10' { sauceDriver(browserName: 'internet explorer', platform:'Windows 7', version:'10') }
+
   // grails -Dgeb.env=ie11 test-app functional:
-  'ie11' { sauceDriver('internetExplorer:Windows 8.1:11') }
-  'ios' { sauceDriver('iphone:OS X 10.9:7.1') }
+  'ie11' { sauceDriver(browserName: 'internet explorer', platform:'Windows 8.1', version:'11') }
+
+  'ios' { sauceDriver(browserName: 'iPhone', platform:'OS X 10.9', version:'7.1', 'device-orientation': 'portrait') }
 }

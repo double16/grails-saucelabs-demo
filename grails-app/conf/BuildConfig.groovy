@@ -36,7 +36,7 @@ grails.project.dependency.resolution = {
     checksums true // Whether to verify checksums on resolve
     legacyResolve false // whether to do a secondary resolve on plugin installation, not advised and here for backwards compatibility
 
-	def gebVersion = "0.9.3"
+	def gebVersion = "0.10.0"
 	def seleniumVersion = "2.42.2"
 	
     repositories {
@@ -92,7 +92,9 @@ grails.project.dependency.resolution = {
 		
         test ":geb:$gebVersion"
         test ":code-coverage:2.0.3-2"
-        test ":geb-saucelabs:0.1"
+        test(":geb-saucelabs:0.1") {
+          excludes "geb-core" // use the application geb version
+        }
     }
 
 }
