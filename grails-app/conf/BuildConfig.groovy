@@ -92,15 +92,12 @@ grails.project.dependency.resolution = {
 		
         test ":geb:$gebVersion"
         test ":code-coverage:2.0.3-2"
-        /*test(":geb-saucelabs:0.1") {
+        test(":geb-saucelabs:0.1") {
           excludes "geb-core" // use the application geb version
-        }*/
+        }
     }
 
 }
-
-grails.plugin.location.'geb-saucelabs' = '../grails-geb-saucelabs'
-grails.plugin.'geb-saucelabs'.useSauceConnect = true
 
 coverage {
   enabledByDefault = false
