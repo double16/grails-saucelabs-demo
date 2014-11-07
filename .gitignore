@@ -20,3 +20,5 @@ stacktrace.log
 .idea
 node_modules
 setenv.sh
+.gradle
+
