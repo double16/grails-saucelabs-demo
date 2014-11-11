@@ -1,45 +1,40 @@
-apply plugin: "grails"
-apply plugin: "geb-saucelabs"
 
 buildscript {
   repositories {
-    jcenter()
+    mavenCentral()
   }
   dependencies {
-    classpath "org.grails:grails-gradle-plugin:2.1.1"
     classpath 'org.gebish:geb-gradle:0.10.0'
   }
 }
 
+project.buildDir = 'target'
+description = "Example project for automated Grails testing with Sauce Labs"
+
+def browsers = [
+    [ browserName: 'chrome',            platform: 'Windows 7',   version:  '36' ],
+    [ browserName: 'firefox',           platform: 'Windows 7',   version:  '31' ],
+    [ browserName: 'firefox',           platform: 'OS X 10.10',  version:  '33' ],
+    [ browserName: 'internet explorer', platform: 'Windows 7',   version:   '8' ],
+    [ browserName: 'internet explorer', platform: 'Windows 7',   version:   '9' ],
+    [ browserName: 'internet explorer', platform: 'Windows 7',   version:  '10' ],
+    [ browserName: 'internet explorer', platform: 'Windows 8.1', version:  '11' ],
+    [ browserName: 'iPhone',            platform:'OS X 10.9',    version: '7.1', 'device-orientation': 'portrait']
+]
+
+apply plugin: "project-report"
+apply plugin: "geb-saucelabs"
+
 repositories {
-  grails.central()
+  mavenCentral()
   maven { url "http://repository-saucelabs.forge.cloudbees.com/release" }
 }
 
-grails {
-  grailsVersion = '2.4.3'
-  groovyVersion = '2.3.7'
-  springLoadedVersion '1.2.0'
-}
-
 dependencies {
-  bootstrap "org.grails.plugins:tomcat:7.0.55" // No container is deployed by default, so add this
   sauceConnect "com.saucelabs:ci-sauce:1.81"
 }
 
 sauceLabs {
-  tasks.withType(Test) {
-    reports.junitXml.destination = reporting.file("test-results/$name")
-    reports.html.destination = reporting.file("test-reports/$name")
-  }
-  browsers {
-    firefox_linux_19
-    chrome_mac
-    delegate."internet explorer_vista_9"
-    nexus4 {
-      capabilities browserName: "android", platform: "Linux", version: "4.4", deviceName: "LG Nexus 4"
-    }
-  }
   account {
     username = System.getenv("SAUCE_LABS_USER")
     accessKey = System.getenv("SAUCE_LABS_ACCESS_PASSWORD")
@@ -48,19 +43,54 @@ sauceLabs {
     port = 4445
   }
 }
-/*
-task testAll << {
 
-  ant.parallel(threadsPerProcessor: 1, failonany: true) {
-    ['chrome', 'firefox', 'firefox-yosemite', 'ie8', 'ie9', 'ie10', 'ie11', 'ios' ].each { browser ->
-      ant.exec(executable: "grails") {
-        ant.arg(value: "-Dgrails.nofork=true")
-        ant.arg(value: "-Dgeb.env=${browser}")
-        ant.arg(value: "test-app")
-        ant.arg(value: "functional:")
-      }
-    }
+/**
+ * Create a new Grails functional ant task for the specified browser.
+ * @param browserSpec map of properties sent to Sauce Labs
+ */
+ext {
+  grailsFunctionalServerPort = 8080
+}
+def grailsFunctionalAntTask(def browserSpec) {
+  def browser = browserSpec.collect { key, value -> "${key}=${value}" }.join(',')
+  def name = browserSpec.collect { key, value -> value }.join('_').replaceAll(/\s+/, '')
+  ant.exec(executable: "grails") {
+    ant.arg(value: "-Dgrails.nofork=true")
+    ant.arg(value: "\"-Dgeb.saucelabs.browser=${browser}\"")
+    ant.arg(value: "\"-Dgeb.build.reportsDir=target/test-reports/geb/${name}\"")
+    ant.arg(value: "-Dgrails.server.port=${grailsFunctionalServerPort}")
+    ant.arg(value: "-Dserver.port=${grailsFunctionalServerPort}")
+    ant.arg(value: "test-app")
+    ant.arg(value: "functional:")
+  }
+  grailsFunctionalServerPort++
+}
+
+/**
+ * Create a new Grails functional test for the specified browser.
+ * @param browserSpec map of properties sent to Sauce Labs
+ */
+def grailsFunctionalTest(def browserSpec) {
+  def name = browserSpec.collect { key, value -> value }.join('_').replaceAll(/\s+/, '')
+
+  def t = task "grailsFuncTest_${name}" << {
+    grailsFunctionalAntTask(browserSpec)
   }
 
+  t.dependsOn 'openSauceTunnelInBackground'
+  t.finalizedBy 'closeSauceTunnel'
 }
-*/
+
+browsers.each { browserSpec ->
+  grailsFunctionalTest(browserSpec)
+}
+
+task functionalTests << {
+  ant.parallel(threadsPerProcessor: 1, failonany: true) {
+    browsers.each { browserSpec ->
+      grailsFunctionalAntTask(browserSpec)
+    }
+  }
+}
+functionalTests.dependsOn 'openSauceTunnelInBackground'
+functionalTests.finalizedBy 'closeSauceTunnel'

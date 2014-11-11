@@ -99,6 +99,8 @@ grails.project.dependency.resolution = {
 
 }
 
+grails.plugin.'geb-saucelabs'.useSauceConnect = !System.getProperty("geb.saucelabs.browser")
+
 coverage {
   enabledByDefault = false
   xml = true
