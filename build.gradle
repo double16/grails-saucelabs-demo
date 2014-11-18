@@ -128,3 +128,7 @@ def browsers = [
 browsers.each { browserSpec ->
   grailsFunctionalTest(browserSpec)
 }
+
+project.tasks.withType(GrailsTask) {
+  captureOutputToInfo = true
+}
