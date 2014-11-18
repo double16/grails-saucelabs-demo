@@ -10,6 +10,8 @@ stacktrace.log
 /cobertura.ser
 .DS_Store
 /target/
+/build/
+/buildPlugins/
 /out/
 /web-app/plugins
 /web-app/WEB-INF/classes

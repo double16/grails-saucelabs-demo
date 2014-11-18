@@ -1,3 +1,4 @@
+import org.grails.gradle.plugin.tasks.GrailsTask
 
 buildscript {
   repositories {
@@ -5,33 +6,71 @@ buildscript {
   }
   dependencies {
     classpath 'org.gebish:geb-gradle:0.10.0'
+    classpath 'org.grails:grails-gradle-plugin:2.1.1'
   }
 }
 
 project.buildDir = 'target'
+project.version = '0.1'
 description = "Example project for automated Grails testing with Sauce Labs"
-
-def browsers = [
-    [ browserName: 'chrome',            platform: 'Windows 7',   version:  '36' ],
-    [ browserName: 'firefox',           platform: 'Windows 7',   version:  '31' ],
-    [ browserName: 'firefox',           platform: 'OS X 10.10',  version:  '33' ],
-    [ browserName: 'internet explorer', platform: 'Windows 7',   version:   '8' ],
-    [ browserName: 'internet explorer', platform: 'Windows 7',   version:   '9' ],
-    [ browserName: 'internet explorer', platform: 'Windows 7',   version:  '10' ],
-    [ browserName: 'internet explorer', platform: 'Windows 8.1', version:  '11' ],
-    [ browserName: 'iPhone',            platform:'OS X 10.9',    version: '7.1', 'device-orientation': 'portrait']
-]
 
 apply plugin: "project-report"
 apply plugin: "geb-saucelabs"
+apply plugin: "grails"
+apply plugin: "idea"
+
+grails {
+  grailsVersion = '2.4.4'
+  groovyVersion = '2.3.6'
+  springLoadedVersion = '1.2.1.RELEASE'
+}
+
+def gebVersion = "0.10.0"
+def seleniumVersion = "2.42.2"
 
 repositories {
   mavenCentral()
+  grails.central()
   maven { url "http://repository-saucelabs.forge.cloudbees.com/release" }
 }
 
 dependencies {
-  sauceConnect "com.saucelabs:ci-sauce:1.81"
+  sauceConnect("com.saucelabs:ci-sauce:1.84") {
+    exclude module: 'sebuilder-interpreter'
+  }
+  // This is marked as provided in the pom for some reason
+  sauceConnect "commons-io:commons-io:1.4"
+
+  test "org.grails:grails-datastore-test-support:1.0-grails-2.4"
+  test "org.gebish:geb-spock:$gebVersion"
+  test "org.seleniumhq.selenium:selenium-support:$seleniumVersion"
+  test "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
+  test "org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion"
+  test "org.seleniumhq.selenium:selenium-ie-driver:$seleniumVersion"
+  test( "com.github.detro:phantomjsdriver:1.2.0" ) {
+    transitive = false
+  }
+
+  // plugins for the build system only
+  bootstrap "org.grails.plugins:tomcat:7.0.55"
+
+  // plugins for the compile step
+  compile "org.grails.plugins:scaffolding:2.1.2"
+  compile 'org.grails.plugins:cache:1.1.7'
+  compile "org.grails.plugins:asset-pipeline:1.9.9"
+
+  // plugins needed at runtime but not for compilation
+  runtime("org.grails.plugins:hibernate4:4.3.5.5") { // or ":hibernate:3.6.10.17"
+    exclude module: 'xml-apis'
+  }
+  runtime "org.grails.plugins:database-migration:1.4.0"
+  runtime "org.grails.plugins:jquery:1.11.1"
+
+  test "org.grails.plugins:geb:$gebVersion"
+  test("org.grails.plugins:code-coverage:2.0.3-2") {
+    exclude module: 'xml-apis'
+    exclude group: 'xerces'
+  }
 }
 
 sauceLabs {
@@ -44,53 +83,48 @@ sauceLabs {
   }
 }
 
+task functionalTests { }
 /**
- * Create a new Grails functional ant task for the specified browser.
+ * Create a new Grails functional test for the specified browser.
  * @param browserSpec map of properties sent to Sauce Labs
  */
 ext {
   grailsFunctionalServerPort = 8080
 }
-def grailsFunctionalAntTask(def browserSpec) {
+def grailsFunctionalTest(def browserSpec) {
   def browser = browserSpec.collect { key, value -> "${key}=${value}" }.join(',')
   def name = browserSpec.collect { key, value -> value }.join('_').replaceAll(/\s+/, '')
-  ant.exec(executable: "grails") {
-    ant.arg(value: "-Dgrails.nofork=true")
-    ant.arg(value: "\"-Dgeb.saucelabs.browser=${browser}\"")
-    ant.arg(value: "\"-Dgeb.build.reportsDir=target/test-reports/geb/${name}\"")
-    ant.arg(value: "-Dgrails.server.port=${grailsFunctionalServerPort}")
-    ant.arg(value: "-Dserver.port=${grailsFunctionalServerPort}")
-    ant.arg(value: "test-app")
-    ant.arg(value: "functional:")
+  def output = "target/test-reports/geb/${name}"
+
+  task "grailsFuncTest_${name}"(type: GrailsTask) {
+    outputs.file(output)
+    command = 'test-app'
+    args = 'functional:'
+    jvmOptions.with {
+      jvmArgs "-Dgrails.nofork=true",
+          "-Dgeb.saucelabs.browser=${browser}",
+          "-Dgeb.build.reportsDir=${output}",
+          "-Dgrails.server.port=${grailsFunctionalServerPort}",
+          "-Dserver.port=${grailsFunctionalServerPort}"
+    }
+    dependsOn 'openSauceTunnelInBackground'
+    finalizedBy 'closeSauceTunnel'
   }
+  functionalTests.dependsOn "grailsFuncTest_${name}"
   grailsFunctionalServerPort++
 }
 
-/**
- * Create a new Grails functional test for the specified browser.
- * @param browserSpec map of properties sent to Sauce Labs
- */
-def grailsFunctionalTest(def browserSpec) {
-  def name = browserSpec.collect { key, value -> value }.join('_').replaceAll(/\s+/, '')
-
-  def t = task "grailsFuncTest_${name}" << {
-    grailsFunctionalAntTask(browserSpec)
-  }
-
-  t.dependsOn 'openSauceTunnelInBackground'
-  t.finalizedBy 'closeSauceTunnel'
-}
+def browsers = [
+    [ browserName: 'chrome',            platform: 'Windows 7',   version:  '36' ],
+    [ browserName: 'firefox',           platform: 'Windows 7',   version:  '31' ],
+    [ browserName: 'firefox',           platform: 'OS X 10.10',  version:  '33' ],
+    [ browserName: 'internet explorer', platform: 'Windows 7',   version:   '8' ],
+    [ browserName: 'internet explorer', platform: 'Windows 7',   version:   '9' ],
+    [ browserName: 'internet explorer', platform: 'Windows 7',   version:  '10' ],
+    [ browserName: 'internet explorer', platform: 'Windows 8.1', version:  '11' ],
+    [ browserName: 'iPhone',            platform:'OS X 10.9',    version: '7.1', 'device-orientation': 'portrait']
+]
 
 browsers.each { browserSpec ->
   grailsFunctionalTest(browserSpec)
 }
-
-task functionalTests << {
-  ant.parallel(threadsPerProcessor: 1, failonany: true) {
-    browsers.each { browserSpec ->
-      grailsFunctionalAntTask(browserSpec)
-    }
-  }
-}
-functionalTests.dependsOn 'openSauceTunnelInBackground'
-functionalTests.finalizedBy 'closeSauceTunnel'

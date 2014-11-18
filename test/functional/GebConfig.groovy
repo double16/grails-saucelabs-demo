@@ -48,6 +48,7 @@ def sauceDriver = { def browserCaps ->
     assert accessKey
     def caps = [:]
     caps << browserCaps
+    caps.put('name', 'grails-saucelabs-demo')
     caps.put('build', "git rev-parse HEAD".execute().text)
     driver = {
        new SauceLabsDriverFactory().create(username, accessKey, caps)
