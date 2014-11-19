@@ -1,4 +1,5 @@
 import org.grails.gradle.plugin.tasks.GrailsTask
+import org.grails.gradle.plugin.tasks.GrailsTestTask
 
 buildscript {
   repositories {
@@ -83,7 +84,10 @@ sauceLabs {
   }
 }
 
-task functionalTests { }
+task functionalTests {
+  group "Sauce Test"
+}
+
 /**
  * Create a new Grails functional test for the specified browser.
  * @param browserSpec map of properties sent to Sauce Labs
@@ -96,10 +100,10 @@ def grailsFunctionalTest(def browserSpec) {
   def name = browserSpec.collect { key, value -> value }.join('_').replaceAll(/\s+/, '')
   def output = "target/test-reports/geb/${name}"
 
-  task "grailsFuncTest_${name}"(type: GrailsTask) {
-    outputs.file(output)
-    command = 'test-app'
-    args = 'functional:'
+  task "grailsFuncTest_${name}"(type: GrailsTestTask) {
+    group "Sauce Test"
+    testResultsDir = file(output)
+    phases = ['functional:']
     jvmOptions.with {
       jvmArgs "-Dgrails.nofork=true",
           "-Dgeb.saucelabs.browser=${browser}",
