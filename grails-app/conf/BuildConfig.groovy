@@ -51,6 +51,8 @@ grails.project.dependency.resolution = {
 
 }
 
+grails.plugin.'geb-saucelabs'.useSauceConnect = false
+
 coverage {
   enabledByDefault = false
   xml = true

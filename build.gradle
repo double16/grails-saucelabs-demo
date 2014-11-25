@@ -29,6 +29,35 @@ grails {
 def gebVersion = "0.10.0"
 def seleniumVersion = "2.42.2"
 
+/** Get hostname appropriate for the Sauce Connect tunnel. */
+def getHostname() {
+  def myhostname = "hostname".execute().text.trim()
+  // .local is not available from the tunnel
+  if (myhostname && !myhostname.endsWith(".local")) {
+    return myhostname
+  }
+
+  // check /etc/hosts for localhost alias
+  myhostname = "localhost"
+  file("/etc/hosts").eachLine { line ->
+    def tokens = line.split(/\s+/)
+    if (tokens[0] == "127.0.0.1") {
+      for(int i = 1; i < tokens.length; i++) {
+        if (!tokens[i].contains("localhost")) {
+          myhostname = tokens[i]
+        }
+      }
+    }
+  }
+
+  // fallback to localhost
+  return myhostname
+}
+
+ext {
+  hostname = getHostname()
+}
+
 repositories {
   mavenCentral()
   grails.central()
@@ -68,6 +97,7 @@ dependencies {
   runtime "org.grails.plugins:jquery:1.11.1"
 
   test "org.grails.plugins:geb:$gebVersion"
+  test "org.grails.plugins:geb-saucelabs:0.1"
   test("org.grails.plugins:code-coverage:2.0.3-2") {
     exclude module: 'xml-apis'
     exclude group: 'xerces'
@@ -81,6 +111,9 @@ sauceLabs {
   }
   connect {
     port = 4445
+    if (project.hostname != "localhost") {
+      additionalOptions << '-t' << project.hostname
+    }
   }
 }
 
@@ -105,11 +138,12 @@ def grailsFunctionalTest(def browserSpec) {
     testResultsDir = file(output)
     phases = ['functional:']
     jvmOptions.with {
-      jvmArgs "-Dgrails.nofork=true",
-          "-Dgeb.saucelabs.browser=${browser}",
-          "-Dgeb.build.reportsDir=${output}",
-          "-Dgrails.server.port=${grailsFunctionalServerPort}",
-          "-Dserver.port=${grailsFunctionalServerPort}"
+      systemProperty "grails.nofork", "true"
+      systemProperty "geb.saucelabs.browser", browser
+      systemProperty "geb.build.reportsDir", output
+      systemProperty "grails.server.port", grailsFunctionalServerPort
+      systemProperty "server.port", grailsFunctionalServerPort
+      systemProperty "grails.server.host", hostname
     }
     dependsOn 'openSauceTunnelInBackground'
     finalizedBy 'closeSauceTunnel'
